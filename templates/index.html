@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load staticfiles %}
 {% block title %}Buildbot REST dashboard{% endblock %}
 
 {%block content %}
@@ -6,19 +7,23 @@
 
           <div class="row placeholders">
             <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
+                  <div id="builds-holder">
+                     <canvas id="fbuilds-chart-area" width="300px" height="150px" />
+                  </div>
+              <h4>All failed builds</h4>
+              <span class="text-muted">{{failed}}%</span>
+            </div>
+            <div class="col-xs-6 col-sm-3 placeholder">
+                  <div id="builds-holder">
+                     <canvas id="fbuildsb-chart-area" width="300px" height="150px" />
+                  </div>
               <h4>Label</h4>
-              <span class="text-muted">Something else</span>
+              <span class="text-muted">Failed builds by builder</span>
             </div>
             <div class="col-xs-6 col-sm-3 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
               <h4>Label</h4>
-              <span class="text-muted">Something else</span>
-            </div>
-            <div class="col-xs-6 col-sm-3 placeholder">
-              <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
-              <h4>Label</h4>
-              <span class="text-muted">Something else</span>
+              <span class="text-muted">Failed builds by worker</span>
             </div>
             <div class="col-xs-6 col-sm-3 placeholder">
               <img src="data:image/gif;base64,R0lGODlhAQABAIAAAHd3dwAAACH5BAAAAAAALAAAAAABAAEAAAICRAEAOw==" width="200" height="200" class="img-responsive" alt="Generic placeholder thumbnail">
@@ -52,4 +57,54 @@
               </tbody>
             </table>
           </div>
+{% endblock %}
+{% block js %}
+<script src="{% static 'js/Chart.bundle.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+    var fbconfig = {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: [
+                {{failed}},
+                100-{{failed}}
+                ],
+                backgroundColor: [
+                    window.chartColors.red,
+                    window.chartColors.green
+                ],
+                label: 'Build status'
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    };
+
+    var fbconfigb = {
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: {{builders}},
+                backgroundColor: [
+                    window.chartColors.blue,
+                    window.chartColors.yellow
+                ],
+                label: 'Build status by builder'
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    };
+
+      window.onload = function() {
+        var fbctx = document.getElementById("fbuilds-chart-area").getContext("2d");
+        var fbctxb = document.getElementById("fbuildsb-chart-area").getContext("2d");
+        window.myPie = new Chart(fbctx, fbconfig);
+        window.myPie = new Chart(fbctxb, fbconfigb);
+    };
+
+</script>
 {% endblock %}
